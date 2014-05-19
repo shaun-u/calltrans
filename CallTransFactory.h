@@ -26,9 +26,8 @@ class CallTransFactory : public AmSessionFactory, public AmDynInvokeFactory, pub
   void invoke(const string& method, const AmArg& args, AmArg& ret);
 
   private:
-  std::map<const std::string, CallTransDialog*> dialogs;
+  std::map<const std::string, CallTransDialog* > dialogs;
 
-  CallTransDialog* createDialog(const std::string& dialogId, const std::string& to);
   void removeDialog();
 
   void transfer(const char* callid, const char* tag, const char* uri);

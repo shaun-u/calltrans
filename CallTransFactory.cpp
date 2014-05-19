@@ -28,7 +28,7 @@ AmSession* CallTransFactory::onInvite(const AmSipRequest& req)
 {
   INFO("new dialog: %s",req.callid.c_str());
   DBG("from:%s; to:%s",req.from.c_str(),req.to.c_str());
-  dialogs[req.callid] = createDialog(req.callid,req.to);
+  dialogs[req.callid] = new CallTransDialog(req.callid);
   return dialogs[req.callid]->getLegA();
 }
 
@@ -54,14 +54,6 @@ void CallTransFactory::invoke(const string& method, const AmArg& args, AmArg& re
   {
     ret.push("methods: list; transfer");
   }
-}
-
-CallTransDialog* CallTransFactory::createDialog(
-    const std::string& dialogId, const std::string& to)
-{
-  std::auto_ptr<CallTransDialog> dialog(new CallTransDialog(dialogId));
-  dialog->addLegB(to);
-  return dialog.release();
 }
 
 void CallTransFactory::removeDialog()

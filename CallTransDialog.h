@@ -1,11 +1,16 @@
 #ifndef _CALLTRANSDIALOG_H_
 #define _CALLTRANSDIALOG_H_
 
+#include "CallTransSession.h"
+
 #include <string>
+#include <memory>
 
+class AmSessionAudioConnector;
 class CallTransSession;
+class AmRingTone;
 
-class CallTransDialog
+class CallTransDialog : private CallTransSessionListener
 {
   public:
   CallTransDialog(const std::string& id);
@@ -26,7 +31,14 @@ class CallTransDialog
   void breakAudio();
 
   private:
-  CallTransSession *legA, *legB, *legC;
+  std::auto_ptr<CallTransSession> legA, legB, legC;
+  std::string did;
+  std::auto_ptr<AmSessionAudioConnector> bridge;
+
+  std::auto_ptr<AmRingTone> ringTone;
+
+  void onConnect(const CallTransSession* leg);
+  void onDisconnect(const CallTransSession* leg);
 };
 
 #endif //_CALLTRANSDIALOG_H_
