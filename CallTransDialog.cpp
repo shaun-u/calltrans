@@ -16,32 +16,7 @@ CallTransSession* CallTransDialog::getLegA()
   return legA.get();
 }
 
-void CallTransDialog::removeLegA()
-{
-
-}
-
-void CallTransDialog::removeLegB()
-{
-
-}
-
-void CallTransDialog::removeLegC()
-{
-
-}
-
-void CallTransDialog::playRingTone()
-{
-
-}
-
-void CallTransDialog::playAnnouncement()
-{
-
-}
-
-void CallTransDialog::bridgeAudio()
+void CallTransDialog::transfer(const std::string& tranfererTag, const std::string& transfereeUri)
 {
 
 }
@@ -67,5 +42,16 @@ void CallTransDialog::onConnect(const CallTransSession* leg)
 
 void CallTransDialog::onDisconnect(const CallTransSession* leg)
 {
-
+  if(leg == legA.get() || leg == legB.get())
+  {
+    legA->bridge(NULL);
+    legB->bridge(NULL);
+    legA->terminate();
+    legB->terminate();
+  }
+  else if(leg == legC.get())
+  {
+    legC->play(NULL);
+    legC->terminate();
+  }
 }

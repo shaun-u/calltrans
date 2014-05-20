@@ -9,7 +9,8 @@ struct CallTransEvent : public AmEvent
   enum
   {
     DoConnected = 100,
-    DoDisconnected = 110
+    DoDisconnected = 110,
+    DoTransferred = 120
   };
 
   CallTransEvent(int eventID) : AmEvent(eventID){}
@@ -17,6 +18,7 @@ struct CallTransEvent : public AmEvent
 
 static CallTransEvent DISCONNECTED_EVENT(CallTransEvent::DoDisconnected);
 static CallTransEvent CONNECTED_EVENT(CallTransEvent::DoConnected);
+static CallTransEvent TRANSFERRED_EVENT(CallTransEvent::DoTransferred);
 
 CallTransSession::CallTransSession()
   : listener(NULL)
@@ -36,7 +38,11 @@ void CallTransSession::start()
 
 void CallTransSession::terminate()
 {
-
+  if(!getStopped())
+  {
+    dlg.bye();
+    setStopped();
+  }
 }
 
 void CallTransSession::play(AmAudio* audio)
@@ -116,6 +122,8 @@ void CallTransSession::onSipReply(
     acceptAudio(reply.body,reply.hdrs);
     postEvent(&CONNECTED_EVENT);
   }
+
+  AmSession::onSipReply(reply,old_dlg_status,trans_method);
 }
 
 void CallTransSession::process(AmEvent* evt)
@@ -142,5 +150,17 @@ void CallTransSession::process(AmEvent* evt)
 	ERROR("unexpected CallTransEvent");
       }
     }
+    
+    return;
   }
+
+  AmSession::process(evt);
+}
+
+
+void CallTransSession::onBye(const AmSipRequest& req)
+{
+  postEvent(&DISCONNECTED_EVENT);
+
+  AmSession::onBye(req);
 }

@@ -65,4 +65,10 @@ void CallTransFactory::transfer(
   const char* callid, const char* tag, const char* uri)
 {
   DBG("callid=%s; tag=%s; uri=%s", callid, tag, uri);
+
+  if(dialogs.find(callid) != dialogs.end())
+  {
+    DBG("found dialog to transfer");
+    dialogs[callid]->transfer(tag,uri);
+  }
 }

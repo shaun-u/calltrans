@@ -15,20 +15,8 @@ class CallTransDialog : private CallTransSessionListener
   public:
   CallTransDialog(const std::string& id);
 
-  void addLegA();
-  void addLegB(const std::string& uri);
-  void addLegC();
-
   CallTransSession* getLegA();
-
-  void removeLegA();
-  void removeLegB();
-  void removeLegC();
-
-  void playRingTone();
-  void playAnnouncement();
-  void bridgeAudio();
-  void breakAudio();
+  void transfer(const std::string& tranfererTag, const std::string& transfereeUri);
 
   private:
   std::auto_ptr<CallTransSession> legA, legB, legC;

@@ -29,6 +29,7 @@ class CallTransSession : public AmSession
   void onSessionStart(const AmSipRequest& req);
   void onSipReply(const AmSipReply& reply, int old_dlg_status, const string& trans_method);
   void process(AmEvent* evt);
+  void onBye(const AmSipRequest& req);
 
   private:
   CallTransSessionListener* listener;
