@@ -5,8 +5,9 @@
 #include "AmRingTone.h"
 
 CallTransDialog::CallTransDialog(const std::string& id)
-  : did(id),legA(new CallTransSession()),bridge(new AmSessionAudioConnector()),
-    ringTone(new AmRingTone(0,2000,4000,440,480))
+  : did(id),legA(new CallTransSession()), transferrer(NULL),
+      bridge(new AmSessionAudioConnector()),
+	ringTone(new AmRingTone(0,2000,4000,440,480))
 {
   legA->addListener(this);  
 }
@@ -16,9 +17,32 @@ CallTransSession* CallTransDialog::getLegA()
   return legA.get();
 }
 
-void CallTransDialog::transfer(const std::string& tranfererTag, const std::string& transfereeUri)
+void CallTransDialog::transfer(const std::string& transfererTag, const std::string& transfereeUri)
 {
+  std::string from;
 
+  //find the tansferring leg
+  if((legB->isOutgoing() ? legB->getRemoteTag():legB->getLocalTag()) == transfererTag)
+  {
+    transferrer = legB.get();
+    from = legA->isOutgoing() ? legA->dlg.remote_party : legA->dlg.local_party;
+  }
+  else if((legA->isOutgoing() ? legA->getRemoteTag():legA->getLocalTag()) == transfererTag)
+  {
+    transferrer = legA.get();
+    from = legB->isOutgoing() ? legB->dlg.remote_party : legB->dlg.local_party;
+  }
+
+  //play music
+  legA->bridge(NULL);
+  legB->bridge(NULL);
+  legA->play(ringTone.get());
+  legB->play(ringTone.get());
+
+  //start call to destination
+  legC.reset(new CallTransSession());
+  legC->addListener(this);
+  legC->call(did,from,transfereeUri);
 }
 
 void CallTransDialog::onConnect(const CallTransSession* leg)
@@ -34,9 +58,36 @@ void CallTransDialog::onConnect(const CallTransSession* leg)
   }
   else if(leg == legB.get())
   {
-    legA->play(NULL);
-
     legB->setCallgroup(did);
+    legA->play(NULL);
+    legA->bridge(bridge.get());
+    legB->bridge(bridge.get());
+  }
+  else if(leg == legC.get())
+  {
+    legC->setCallgroup(did);
+    
+    legA->play(NULL);
+    legB->play(NULL);
+
+    //move transferrer to legC
+    if(legA.get() == transferrer)
+    {
+      legA.release();
+      legA = legC;
+    }
+    else
+    {
+      legB.release();
+      legB = legC;
+    }
+    legC.reset(transferrer);
+    transferrer = NULL;
+
+    legA->bridge(bridge.get());
+    legB->bridge(bridge.get());
+
+    legC->terminate();
   }
 }
 

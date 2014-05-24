@@ -21,7 +21,7 @@ static CallTransEvent CONNECTED_EVENT(CallTransEvent::DoConnected);
 static CallTransEvent TRANSFERRED_EVENT(CallTransEvent::DoTransferred);
 
 CallTransSession::CallTransSession()
-  : listener(NULL)
+  : listener(NULL),origination(INCOMING)
 {
   RTPStream()->setPlayoutType(ADAPTIVE_PLAYOUT);
 }
@@ -75,6 +75,8 @@ void CallTransSession::bridge(AmSessionAudioConnector* connector)
 void CallTransSession::call(
   const std::string& callid, const std::string& to, const std::string& from)
 {
+  origination = OUTGOING;
+
   dlg.local_tag = AmSession::getNewId();
   dlg.callid = callid;
   dlg.local_party = from;
@@ -91,23 +93,24 @@ void CallTransSession::call(
   AmSessionContainer::instance()->addSession(dlg.local_tag, this);
 }
 
+bool CallTransSession::isOutgoing() const
+{
+  return origination == OUTGOING;
+}
+
 void CallTransSession::onSessionStart(const AmSipRequest& req)
 {
-  try
+  std::string sdpReply;
+  acceptAudio(req.body,req.hdrs,&sdpReply);
+  if(dlg.reply(req,200,"OK","application/sdp",sdpReply) == 0)
   {
-    std::string sdpReply;
-    acceptAudio(req.body,req.hdrs,&sdpReply);
-    if(dlg.reply(req,200,"OK","application/sdp",sdpReply) != 0)
-    {
-      throw AmSession::Exception(500,"calltrans server error");
-    }
     postEvent(&CONNECTED_EVENT);
   }
-  catch(const AmSession::Exception& e)
+  else
   {
-    ERROR("%i %s\n",e.code,e.reason.c_str());
+    ERROR("error replying with 200 OK");
     setStopped();
-    dlg.reply(req,e.code,e.reason);
+    dlg.reply(req,500,"call trans server error");
     postEvent(&DISCONNECTED_EVENT);
   }
 

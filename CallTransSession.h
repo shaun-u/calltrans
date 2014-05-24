@@ -25,6 +25,7 @@ class CallTransSession : public AmSession
   void play(AmAudio* audio);
   void bridge(AmSessionAudioConnector* connector);
   void call(const std::string& callid, const std::string& to, const std::string& from);
+  bool isOutgoing() const;
 
   void onSessionStart(const AmSipRequest& req);
   void onSipReply(const AmSipReply& reply, int old_dlg_status, const string& trans_method);
@@ -33,6 +34,7 @@ class CallTransSession : public AmSession
 
   private:
   CallTransSessionListener* listener;
+  enum{INCOMING,OUTGOING} origination;
 };
 
 #endif //_CALLTRANSSESSION_H_

@@ -16,10 +16,11 @@ class CallTransDialog : private CallTransSessionListener
   CallTransDialog(const std::string& id);
 
   CallTransSession* getLegA();
-  void transfer(const std::string& tranfererTag, const std::string& transfereeUri);
+  void transfer(const std::string& transfererTag, const std::string& transfereeUri);
 
   private:
   std::auto_ptr<CallTransSession> legA, legB, legC;
+  CallTransSession* transferrer;
   std::string did;
   std::auto_ptr<AmSessionAudioConnector> bridge;
 
