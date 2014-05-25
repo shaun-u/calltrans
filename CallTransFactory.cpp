@@ -8,7 +8,7 @@
 #include <string>
 #include <sstream>
 
-#define MOD_NAME "transcall"
+#define MOD_NAME "calltrans"
 
 EXPORT_SESSION_FACTORY(CallTransFactory,MOD_NAME);
 EXPORT_PLUGIN_CLASS_FACTORY(CallTransFactory,MOD_NAME);
@@ -46,11 +46,14 @@ void CallTransFactory::invoke(const string& method, const AmArg& args, AmArg& re
   if(std::string("list").compare(method) == 0)
   {
     std::ostringstream os;
+    os << "total dialogs: " << dialogs.size() << std::endl;
+
     std::map< std::string, CallTransDialog* >::iterator pos;
     for(pos = dialogs.begin();pos != dialogs.end(); ++pos)
     {
       os << "dialog: " << pos->first << std::endl;
     }
+
     ret.push(os.str().c_str());
   }
   else if(std::string("transfer").compare(method) == 0)
