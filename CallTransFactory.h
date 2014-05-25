@@ -3,11 +3,15 @@
 
 #include "AmApi.h"
 
+#include "CallTransListeners.h"
+
 #include <map>
 
 class CallTransDialog;
 
-class CallTransFactory : public AmSessionFactory, public AmDynInvokeFactory, public AmDynInvoke
+class CallTransFactory : 
+  public AmSessionFactory, public AmDynInvokeFactory, public AmDynInvoke,
+    public CallTransDialogListener
 {
   public:
   CallTransFactory(const std::string& applicationName);
@@ -25,10 +29,10 @@ class CallTransFactory : public AmSessionFactory, public AmDynInvokeFactory, pub
   CallTransFactory* getInstance();
   void invoke(const string& method, const AmArg& args, AmArg& ret);
 
+  void onDisconnect(const std::string& did);
+
   private:
   std::map<const std::string, CallTransDialog* > dialogs;
-
-  void removeDialog();
 
   void transfer(const char* callid, const char* tag, const char* uri);
   void list();

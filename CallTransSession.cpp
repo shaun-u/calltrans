@@ -1,4 +1,5 @@
 #include "CallTransSession.h"
+#include "CallTransListeners.h"
 
 #include "AmMediaProcessor.h"
 #include "AmSessionContainer.h"
@@ -29,11 +30,6 @@ CallTransSession::CallTransSession()
 void CallTransSession::addListener(CallTransSessionListener* listener)
 {
   this->listener = listener;
-}
-
-void CallTransSession::start()
-{
-
 }
 
 void CallTransSession::terminate()

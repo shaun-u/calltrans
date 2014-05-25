@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <sstream>
 
 #define MOD_NAME "transcall"
 
@@ -29,6 +30,7 @@ AmSession* CallTransFactory::onInvite(const AmSipRequest& req)
   INFO("new dialog: %s",req.callid.c_str());
   DBG("from:%s; to:%s",req.from.c_str(),req.to.c_str());
   dialogs[req.callid] = new CallTransDialog(req.callid);
+  dialogs[req.callid]->addListener(this);
   return dialogs[req.callid]->getLegA();
 }
 
@@ -43,7 +45,13 @@ void CallTransFactory::invoke(const string& method, const AmArg& args, AmArg& re
 
   if(std::string("list").compare(method) == 0)
   {
-    ret.push("TODO list of call ids");
+    std::ostringstream os;
+    std::map< std::string, CallTransDialog* >::iterator pos;
+    for(pos = dialogs.begin();pos != dialogs.end(); ++pos)
+    {
+      os << "dialog: " << pos->first << std::endl;
+    }
+    ret.push(os.str().c_str());
   }
   else if(std::string("transfer").compare(method) == 0)
   {
@@ -56,9 +64,19 @@ void CallTransFactory::invoke(const string& method, const AmArg& args, AmArg& re
   }
 }
 
-void CallTransFactory::removeDialog()
+void CallTransFactory::onDisconnect(const std::string& did)
 {
+  DBG("removing disconnected dialog: %s", did.c_str());
 
+  std::map< std::string, CallTransDialog* >::iterator pos = dialogs.find(did);
+  if(pos != dialogs.end())
+  {
+    dialogs.erase(pos);
+  }
+  else
+  {
+    DBG("did not find dialog to remove");
+  }
 }
 
 void CallTransFactory::transfer(
@@ -70,5 +88,9 @@ void CallTransFactory::transfer(
   {
     DBG("found dialog to transfer");
     dialogs[callid]->transfer(tag,uri);
+  }
+  else
+  {
+    DBG("did not find dialog to transfer");
   }
 }
